@@ -1,0 +1,82 @@
+name: Release
+
+# Builds unsigned installers for macOS, Windows, and Linux and attaches them to
+# a GitHub Release whenever you push a version tag (e.g. `git tag v1.0.0 && git
+# push --tags`). No signing keys, no telemetry, and no hosted backend are
+# required — ChannelPulse OSS is free to build and distribute.
+#
+# macOS/Windows note: installers are UNSIGNED. On first launch the OS may warn
+# that the app is from an unidentified developer; users can allow it in their
+# system security settings. If you distribute your own fork, you can add your
+# own signing/notarization credentials as repository secrets.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            rust_targets: "aarch64-apple-darwin,x86_64-apple-darwin"
+            tauri_args: "--target universal-apple-darwin"
+          - platform: ubuntu-22.04
+            rust_targets: ""
+            tauri_args: ""
+          - platform: windows-latest
+            rust_targets: ""
+            tauri_args: ""
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_targets }}
+
+      - name: Cache cargo
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "./src-tauri -> target"
+
+      - name: Install system deps (Linux)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev librsvg2-dev patchelf libgtk-3-dev \
+            pkg-config libasound2-dev libpulse-dev \
+            libglib2.0-dev libgdk-pixbuf2.0-dev libcairo-gobject2 \
+            libayatana-appindicator3-dev
+
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Build & publish (Tauri)
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "ChannelPulse OSS ${{ github.ref_name }}"
+          releaseBody: "Download the installer for your platform below. Installers are unsigned; your OS may ask you to allow the app on first launch."
+          releaseDraft: false
+          prerelease: false
+          args: ${{ matrix.tauri_args }}

@@ -1,0 +1,683 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@source "node_modules/streamdown/dist/**/*.{js,ts,jsx,tsx}";
+/* Explicitly scan all app source so component class names (button/card/input
+   cva variants, panels, etc.) are generated even when this CSS is used from a
+   build whose root isn't the project root — e.g. the web /admin app (root:
+   admin/). Harmless for the desktop build, which already scans src/. */
+@source "./**/*.{ts,tsx}";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* Match the marketing site: Figtree is the UI text font. */
+  --font-sans: "Figtree", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/*
+  Two named steps below `text-xs`, so the app's micro-labels (badges, counters,
+  meta lines) are part of the type scale instead of ~200 one-off `text-[10px]`
+  values. Being rem-based they scale with the root font-size set further down;
+  the px values they replaced stayed frozen while everything around them grew.
+*/
+@theme {
+  --text-2xs: 0.6875rem; /* was text-[11px] */
+  --text-2xs--line-height: 1.45;
+  --text-3xs: 0.625rem; /* was text-[9px] / text-[10px] */
+  --text-3xs--line-height: 1.4;
+}
+
+:root {
+  --radius: 0.625rem;
+  --cursor-type: default;
+  /* Brand colors sampled from the app icon */
+  --brand-navy: oklch(0.263 0.099 262.8); /* #082054 icon navy */
+  --brand-mint: oklch(0.848 0.173 156.7); /* #53ee9e icon mint */
+  --brand-mint-deep: oklch(0.773 0.153 163.2); /* deeper mint for on-white */
+  --brand-mint-tint: oklch(0.975 0.023 165.9); /* subtle mint surface */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: var(--brand-navy);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: var(--brand-mint-tint);
+  --accent-foreground: var(--brand-navy);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: var(--brand-mint);
+  --chart-1: var(--brand-navy);
+  --chart-2: var(--brand-mint-deep);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: var(--brand-navy);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: var(--brand-mint-tint);
+  --sidebar-accent-foreground: var(--brand-navy);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: var(--brand-mint);
+}
+
+.dark {
+  /* Brighter navy so it stays legible on dark surfaces; mint stays vivid */
+  --brand-navy: oklch(0.54 0.17 264); /* lifted icon navy for dark UI */
+  --brand-mint: oklch(0.848 0.173 156.7); /* #53ee9e icon mint */
+  --brand-navy-surface: oklch(0.3 0.04 264); /* subtle navy-tinted surface */
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: var(--brand-navy);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: var(--brand-navy-surface);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: var(--brand-mint);
+  --chart-1: var(--brand-navy);
+  --chart-2: var(--brand-mint);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: var(--brand-navy);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: var(--brand-navy-surface);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: var(--brand-mint);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+  }
+
+  /* Show the hand/pointer cursor on interactive controls (Tailwind v4 no
+     longer applies it by default). Disabled controls keep the default cursor. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a[href],
+  label[for],
+  summary,
+  select:not(:disabled),
+  [role="tab"]:not([aria-disabled="true"]),
+  [role="menuitem"]:not([aria-disabled="true"]),
+  [role="option"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [role="button"][aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
+
+/*
+  Overlay legibility over an unknown window behind the panel.
+
+  --panel-backdrop: adaptive tone (blur + brightness/contrast) computed in
+    theme.context.tsx. Falls back to the plain blur, then none, so the panel
+    still renders before JS runs.
+  --text-halo-strength: 0..1 alpha for the text outline below. 0 = no halo
+    (the panel is frosted enough on its own at low transparency).
+*/
+:root {
+  --panel-backdrop: var(--backdrop-blur, none);
+  --text-halo-strength: 0;
+}
+
+/* Apply global transparency */
+[data-slot="card"] {
+  background-color: rgb(from var(--card) r g b / var(--opacity, 1)) !important;
+  backdrop-filter: var(--panel-backdrop, var(--backdrop-blur, none));
+}
+
+[data-slot="popover-content"] {
+  background-color: rgb(
+    from var(--popover) r g b / var(--opacity, 1)
+  ) !important;
+  backdrop-filter: var(--panel-backdrop, var(--backdrop-blur, none));
+}
+
+/*
+  Text halo — a soft outline in the inverse tone (--background is always the
+  opposite of --foreground), so text stays readable on top of any window as the
+  fill fades out. Strength ramps with transparency; at 0 it disappears entirely,
+  so nothing changes at low transparency. Uses layered text-shadows because
+  -webkit-text-stroke thins the glyphs; shadows keep the type weight intact.
+*/
+[data-slot="popover-content"],
+[data-slot="card"] {
+  text-shadow: 0 0 2px rgb(from var(--background) r g b / var(--text-halo-strength)),
+    0 0 4px rgb(from var(--background) r g b / var(--text-halo-strength)),
+    0 0 6px rgb(from var(--background) r g b / calc(var(--text-halo-strength) * 0.7));
+}
+
+/* Controls carry their own fill, so drop the halo on them to avoid a smudge. */
+[data-slot="popover-content"] :is(button, input, textarea, kbd, [data-slot="badge"]),
+[data-slot="card"] :is(button, input, textarea, kbd, [data-slot="badge"]) {
+  text-shadow: none;
+}
+
+/*
+  "High-contrast text" escape hatch (Settings → Theme). Draws a caption-style
+  backing plate behind block text inside the panels, so it is legible even at
+  100% transparency over a hostile background. Scoped to panel content and only
+  block text — the window still shows through the gaps. box-decoration-break
+  keeps the plate hugging wrapped lines instead of one big rectangle.
+*/
+:root[data-text-plate="on"]
+  :is([data-slot="popover-content"], [data-slot="card"])
+  :is(p, li, blockquote, h1, h2, h3, h4) {
+  background-color: rgb(from var(--background) r g b / 0.55);
+  border-radius: 0.375rem;
+  padding: 0.05em 0.35em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(from var(--muted-foreground) r g b / 0.2) transparent !important;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent !important;
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgb(from var(--muted-foreground) r g b / 0.2) !important;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgb(from var(--muted-foreground) r g b / 0.3) !important;
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent !important;
+}
+
+/*
+  Invisible-cursor mode (overlay windows only): hide the real OS cursor on
+  EVERYTHING so the app can draw its own replacement. This must beat the
+  pointer-affordance rules above, hence the !important. In every OTHER mode we
+  do NOT force a global cursor — so buttons/links show the hand pointer, text
+  shows the I-beam, etc. Toggled via `data-cursor="hidden"` on <html> (set in
+  app.context `updateCursor`).
+*/
+:root[data-cursor="hidden"] * {
+  cursor: none !important;
+}
+/* Opt-out surfaces that must keep a visible cursor even in invisible mode
+   (e.g. the portal-rendered Mermaid lightbox). */
+:root[data-cursor="hidden"] .cp-cursor-visible,
+:root[data-cursor="hidden"] .cp-cursor-visible * {
+  cursor: default !important;
+}
+
+html {
+  /*
+    App-wide scale. Tailwind's text, spacing, sizing and radius utilities are
+    all rem-based, so raising the root font-size grows the text AND the boxes
+    around it together — bumping class names alone would have grown the text
+    inside containers that stayed the same size. 112.5% = an 18px base, about
+    one Tailwind step up from the 16px default. The window dimensions in
+    src-tauri/src/window.rs, tauri.conf.json, hooks/useWindow.ts and
+    components/Sidebar.tsx are scaled by the same 1.125 so the chrome fits the
+    content; change them together or the overlay bar clips.
+  */
+  font-size: 112.5%;
+  overscroll-behavior: none;
+}
+
+body {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Streamdown code block styling */
+[data-streamdown="code-block"] code {
+  color: inherit !important;
+}
+
+.dark [data-streamdown="code-block"] code span {
+  color: var(--shiki-dark) !important;
+}
+
+/* Fallback for code text color in dark mode */
+.dark [data-streamdown="code-block"] code {
+  color: oklch(0.985 0 0) !important;
+}
+
+/* Fix viewport overflow for markdown content */
+[data-streamdown="code-block"],
+[data-streamdown="table"] {
+  max-width: 100% !important;
+  overflow-x: auto !important;
+}
+
+[data-streamdown="code-block"] pre,
+[data-streamdown="code-block"] code {
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  word-wrap: break-word !important;
+  white-space: pre-wrap !important;
+}
+
+/*
+  Interview / bank markdown answers: Tailwind preflight clears list styles, and
+  Streamdown nests content a level deep — restore clear bullets + indentation.
+*/
+.cp-md ul {
+  list-style-type: disc !important;
+  list-style-position: outside !important;
+  padding-left: 1.5rem !important;
+  margin: 0.75rem 0 !important;
+}
+.cp-md ol {
+  list-style-type: decimal !important;
+  list-style-position: outside !important;
+  padding-left: 1.5rem !important;
+  margin: 0.75rem 0 !important;
+}
+.cp-md ul ul {
+  list-style-type: circle !important;
+  margin: 0.35rem 0 !important;
+}
+.cp-md ol ol {
+  list-style-type: lower-alpha !important;
+  margin: 0.35rem 0 !important;
+}
+.cp-md li {
+  display: list-item !important;
+  margin: 0.35rem 0 !important;
+  padding-left: 0.35rem !important;
+  line-height: 1.6;
+}
+.cp-md li > p {
+  margin: 0 !important;
+  display: inline;
+}
+.cp-md li > p + p {
+  display: block;
+  margin-top: 0.4rem !important;
+}
+.cp-md li > ul,
+.cp-md li > ol {
+  margin-top: 0.35rem !important;
+  margin-bottom: 0.35rem !important;
+}
+
+/* Quill rich-text editor — match the app theme (light/dark) and drop Quill's
+   own doubled borders (the wrapper provides the border). */
+.cp-quill .ql-toolbar.ql-snow {
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 6px 8px;
+}
+.cp-quill .ql-container.ql-snow {
+  border: none;
+  font-family: inherit;
+  /* rem, not px, so the editor text scales with the app like everything else. */
+  font-size: 0.875rem;
+}
+.cp-quill .ql-editor {
+  min-height: inherit;
+  color: var(--foreground);
+  line-height: 1.6;
+}
+.cp-quill .ql-editor.ql-blank::before {
+  color: var(--muted-foreground);
+  font-style: normal;
+}
+.cp-quill .ql-snow .ql-stroke {
+  stroke: currentColor;
+  opacity: 0.7;
+}
+.cp-quill .ql-snow .ql-fill {
+  fill: currentColor;
+  opacity: 0.7;
+}
+.cp-quill .ql-snow .ql-picker {
+  color: currentColor;
+}
+.cp-quill .ql-snow.ql-toolbar button:hover .ql-stroke,
+.cp-quill .ql-snow .ql-toolbar button.ql-active .ql-stroke,
+.cp-quill .ql-snow .ql-picker-label:hover .ql-stroke {
+  stroke: var(--primary);
+  opacity: 1;
+}
+.cp-quill .ql-snow.ql-toolbar button:hover .ql-fill,
+.cp-quill .ql-snow .ql-toolbar button.ql-active .ql-fill {
+  fill: var(--primary);
+  opacity: 1;
+}
+.cp-quill .ql-snow .ql-picker-options {
+  background: var(--background);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+.cp-quill .ql-editor blockquote {
+  border-left: 3px solid var(--border);
+  color: var(--muted-foreground);
+}
+.cp-quill .ql-editor pre.ql-syntax {
+  background: var(--muted, rgba(127, 127, 127, 0.12));
+  color: var(--foreground);
+  border-radius: 8px;
+}
+
+/* Interview design canvas: hide Excalidraw branding / links (help dialog,
+   docs/social links, and any wordmark) so the workspace stays unbranded. */
+.cp-excalidraw .help-icon,
+.cp-excalidraw .welcome-screen-menu,
+.cp-excalidraw .welcome-screen-decor,
+.cp-excalidraw a[href*="excalidraw.com"],
+.cp-excalidraw a[href*="excalidraw"],
+.cp-excalidraw a[href*="plus.excalidraw"] {
+  display: none !important;
+}
+
+/* ---------- Onboarding: landing-style display font + entrance ---------- */
+.cp-display {
+  font-family: "EB Garamond", Georgia, "Times New Roman", serif;
+}
+@keyframes cp-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.cp-reveal {
+  animation: cp-reveal 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cp-reveal {
+    animation: none;
+  }
+}
+
+/*
+  Long transcripts scroll smoothly (pages/chats/components/View.tsx).
+
+  A chat bubble is a `[data-slot="card"]`, and the global translucency rule above
+  gives EVERY card a `backdrop-filter`. Stacking hundreds of backdrop-filtered
+  layers inside one scroll container is the single biggest cause of choppy
+  scrolling: each one needs its own compositing layer plus a readback of
+  everything behind it, on every frame. Transparency is an overlay-panel feature
+  (§10) — the dashboard window is opaque to the desktop, so blurring an
+  individual bubble buys nothing here. Keep the translucent background, drop the
+  blur. This selector is more specific than the global one, so no !important.
+*/
+.cp-thread [data-slot="card"] {
+  backdrop-filter: none;
+}
+
+/* Isolate each message so a change in one (streaming text, a hover state)
+   can't force layout or repaint of the whole thread. */
+.cp-thread-message {
+  contain: layout style;
+}
+
+/* "Jump to transcript" from a scorecard evidence popover: briefly ring the
+   message the quote came from, so the eye lands on the right line after the
+   view flips and scrolls. Applied for ~1.6s by pages/chats/components/View.tsx. */
+@keyframes cp-flash {
+  0% {
+    background-color: color-mix(in oklab, var(--primary) 18%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 45%, transparent);
+  }
+  70% {
+    background-color: color-mix(in oklab, var(--primary) 10%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 25%, transparent);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: 0 0 0 2px transparent;
+  }
+}
+.cp-flash {
+  border-radius: 0.75rem;
+  animation: cp-flash 1.6s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cp-flash {
+    animation: none;
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 45%, transparent);
+  }
+}
+
+/* Gentle pulsing ring to draw attention to a recommended action. */
+@keyframes cp-attention {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(3, 79, 70, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(3, 79, 70, 0);
+  }
+}
+.cp-attention {
+  animation: cp-attention 1.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cp-attention {
+    animation: none;
+  }
+}
+
+/* ---------- Onboarding mock diagrams (reuse the landing's animations) ---------- */
+@keyframes cp-wave {
+  0%,
+  100% {
+    height: 6px;
+  }
+  50% {
+    height: 20px;
+  }
+}
+@keyframes cp-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+.cp-float {
+  animation: cp-float 6s ease-in-out infinite;
+}
+.cp-wave {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+}
+.cp-wave > span {
+  display: block;
+  width: 3px;
+  border-radius: 2px;
+  background: #f0d7ff;
+  animation: cp-wave 1.1s ease-in-out infinite;
+}
+.cp-wave > span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.cp-wave > span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.cp-wave > span:nth-child(4) {
+  animation-delay: 0.45s;
+}
+.cp-wave > span:nth-child(5) {
+  animation-delay: 0.6s;
+}
+.cp-wave > span:nth-child(6) {
+  animation-delay: 0.75s;
+}
+.cp-wave > span:nth-child(7) {
+  animation-delay: 0.9s;
+}
+.cp-wave--forest > span {
+  background: #034f46;
+}
+/* Privacy step (AppMocks PrivacyMock): the excluded window breathes gently so a
+   dashed, half-there box reads as "deliberately not in the share" rather than as
+   an element that failed to load. */
+@keyframes cp-ghost {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+.cp-ghost {
+  animation: cp-ghost 2.6s ease-in-out infinite;
+}
+/* ---------- The full-loop "how it works" flow (AppMocks Loop* cards) ----------
+   The loop's whole idea is sequence: rounds get ticked on, a clock drains, grades
+   land, a decision follows. These three run once per slide (`both`, not
+   `infinite`) so the card *performs* the step when you arrive at it and then sits
+   still — a permanently animating panel behind explanatory text is noise. The
+   slide is keyed on its index in LoopIntro, which is what re-triggers them. */
+@keyframes cp-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.cp-pop {
+  animation: cp-pop 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+/* A round's wall clock, spending its minutes. */
+@keyframes cp-drain {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 68%;
+  }
+}
+.cp-drain {
+  animation: cp-drain 2.4s ease-out both;
+}
+/* A score bar growing to its mark. `--cp-fill-to` is set per bar inline. */
+@keyframes cp-fill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: var(--cp-fill-to, 100%);
+  }
+}
+.cp-fill {
+  animation: cp-fill 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+/* The dwell bar on the current step of the loop walkthrough — how long until it
+   advances itself. Duration is set inline from STEP_MS so there's one source of
+   truth for the timing. Deliberately not reduced-motion-exempted here: when
+   reduced motion is on, LoopIntro never autoplays, so this never renders. */
+@keyframes cp-dwell {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cp-float,
+  .cp-ghost,
+  .cp-wave > span,
+  .cp-pop,
+  .cp-drain {
+    animation: none;
+  }
+  /* Not `animation: none` — that would collapse every score bar to width 0.
+     Jump to the end state instead. */
+  .cp-fill {
+    animation-duration: 0.01ms;
+  }
+}

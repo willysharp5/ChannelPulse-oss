@@ -1,0 +1,34 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "cross-platform",
+  "description": "Capability for the main window on Windows",
+  "windows": ["main", "dashboard"],
+  "platforms": ["windows"],
+  "permissions": [
+    "core:default",
+    "opener:default",
+    "opener:allow-open-path",
+    "keychain:default",
+    "keychain:allow-get-item",
+    "keychain:allow-save-item",
+    "keychain:allow-remove-item",
+    "global-shortcut:allow-is-registered",
+    "global-shortcut:allow-register",
+    "global-shortcut:allow-unregister",
+    "shell:allow-open",
+    "dialog:default",
+    "dialog:allow-open",
+    "dialog:allow-save",
+    "core:window:allow-start-dragging",
+    "core:window:allow-start-resize-dragging",
+    "sql:default",
+    "sql:allow-execute",
+    "autostart:allow-enable",
+    "autostart:allow-disable",
+    "autostart:allow-is-enabled",
+    {
+      "identifier": "http:default",
+      "allow": [{ "url": "http://**" }, { "url": "https://**" }]
+    }
+  ]
+}

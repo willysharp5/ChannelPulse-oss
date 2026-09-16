@@ -1,0 +1,42 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+release
+*.local
+
+# Environment / secrets — never commit (but keep the template)
+.env*
+!.env.example
+
+# Hosted-app content that is not part of this edition. Ignored, not just
+# deleted, so a stray `git add -A` in a stale working copy can't put it back.
+src/pages/tutorials/
+
+# Rust / Tauri build output
+src-tauri/target
+src-tauri/gen
+
+# Bundled local model weights (downloaded on first run, not committed)
+src-tauri/resources/models/*.bin
+src-tauri/resources/models/*.gguf
+
+# Editor / local tooling
+.claude
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

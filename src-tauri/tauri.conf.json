@@ -1,0 +1,66 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "ChannelPulse OSS",
+  "version": "1.0.0",
+  "identifier": "com.channelpulse.oss",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "macOSPrivateApi": true,
+    "windows": [
+      {
+        "title": "ChannelPulse OSS - AI Assistant",
+        "width": 675,
+        "height": 99,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "resizable": true,
+        "visibleOnAllWorkspaces": true,
+        "skipTaskbar": true,
+        "visible": true,
+        "center": false,
+        "contentProtected": false,
+        "focus": false,
+        "acceptFirstMouse": true,
+        "shadow": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "app",
+      "dmg",
+      "nsis",
+      "msi"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "resources": [
+      "info.plist"
+    ],
+    "macOS": {
+      "minimumSystemVersion": "10.13"
+    }
+  },
+  "plugins": {
+    "sql": {
+      "preload": [
+        "sqlite:channelpulse.db"
+      ]
+    }
+  }
+}

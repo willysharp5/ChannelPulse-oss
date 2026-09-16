@@ -1,0 +1,44 @@
+name: CI
+
+# Fast feedback on every push and pull request: type-check the frontend and
+# make sure the Rust crate compiles. No secrets, no backend, no telemetry.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  frontend:
+    name: Type-check frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npm run typecheck
+
+  rust:
+    name: Check Rust crate
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "./src-tauri -> target"
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev librsvg2-dev patchelf libgtk-3-dev \
+            pkg-config libasound2-dev libpulse-dev \
+            libglib2.0-dev libgdk-pixbuf2.0-dev libcairo-gobject2 \
+            libayatana-appindicator3-dev
+      - name: cargo check
+        working-directory: src-tauri
+        run: cargo check
