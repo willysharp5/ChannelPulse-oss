@@ -16,6 +16,8 @@ import {
   buildInterviewSystemPrompt,
   STORAGE_KEYS,
   SCENARIO_PROMPTS,
+  NO_AI_PROVIDER_MESSAGE,
+  INVALID_AI_PROVIDER_MESSAGE,
   type ScenarioKey,
 } from "@/config";
 import {
@@ -1026,7 +1028,7 @@ export function useSystemAudio() {
 
         const useChannelPulseAPI = await shouldUseChannelPulseAPI();
         if (!selectedAIProvider.provider && !useChannelPulseAPI) {
-          setError("No AI provider selected.");
+          setError(NO_AI_PROVIDER_MESSAGE);
           return;
         }
 
@@ -1034,7 +1036,7 @@ export function useSystemAudio() {
           (p) => p.id === selectedAIProvider.provider
         );
         if (!provider && !useChannelPulseAPI) {
-          setError("AI provider config not found.");
+          setError(INVALID_AI_PROVIDER_MESSAGE);
           return;
         }
 

@@ -1,7 +1,11 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useWindowResize } from "./useWindow";
 import { useGlobalShortcuts } from "@/hooks";
-import { MAX_FILES } from "@/config";
+import {
+  MAX_FILES,
+  NO_AI_PROVIDER_MESSAGE,
+  INVALID_AI_PROVIDER_MESSAGE,
+} from "@/config";
 import { useApp } from "@/contexts";
 import {
   fetchAIResponse,
@@ -191,7 +195,7 @@ export const useCompletion = () => {
         if (!selectedAIProvider.provider && !useChannelPulseAPI) {
           setState((prev) => ({
             ...prev,
-            error: "Please select an AI provider in settings",
+            error: NO_AI_PROVIDER_MESSAGE,
           }));
           return;
         }
@@ -202,7 +206,7 @@ export const useCompletion = () => {
         if (!provider && !useChannelPulseAPI) {
           setState((prev) => ({
             ...prev,
-            error: "Invalid provider selected",
+            error: INVALID_AI_PROVIDER_MESSAGE,
           }));
           return;
         }
@@ -596,7 +600,7 @@ export const useCompletion = () => {
             if (!selectedAIProvider.provider && !useChannelPulseAPI) {
               setState((prev) => ({
                 ...prev,
-                error: "Please select an AI provider in settings",
+                error: NO_AI_PROVIDER_MESSAGE,
               }));
               return;
             }
@@ -607,7 +611,7 @@ export const useCompletion = () => {
             if (!provider && !useChannelPulseAPI) {
               setState((prev) => ({
                 ...prev,
-                error: "Invalid provider selected",
+                error: INVALID_AI_PROVIDER_MESSAGE,
               }));
               return;
             }

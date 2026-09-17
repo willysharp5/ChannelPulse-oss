@@ -39,7 +39,12 @@ import {
 } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { expandQuickAction, SCENARIO_PROMPTS, STORAGE_KEYS } from "@/config";
+import {
+  expandQuickAction,
+  SCENARIO_PROMPTS,
+  STORAGE_KEYS,
+  NO_AI_PROVIDER_MESSAGE,
+} from "@/config";
 import { safeLocalStorage } from "@/lib/storage";
 import { setSyncedItem } from "@/lib/sync/kv";
 import { PinnedStrip, ReferencePanel } from "@/components/reference";
@@ -1070,14 +1075,36 @@ export const SystemAudio = (props: useSystemAudioType) => {
               <PinnedStrip pins={refPins} onPinsChange={setRefPins} />
             )}
 
-            {/* Global error (shown above both streams) */}
+            {/* Global error (shown above both streams).
+
+                "No model connected" is the one error that isn't a fault: on a
+                fresh install speech-to-text runs offline and works immediately,
+                so the app hears you, transcribes you, and then answers nothing.
+                That reads as broken. So it gets its own heading and a button
+                into the dashboard, where the provider is chosen — the rest of
+                the errors stay a plain red box. */}
             {error && !setupRequired && (
               <div className="flex-shrink-0 px-2 pt-2">
                 <div className="flex items-start gap-2 p-2.5 rounded-lg bg-red-50 border border-red-200">
                   <AlertCircleIcon className="w-3.5 h-3.5 text-red-500 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-[10px] font-medium text-red-800">Error</p>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-medium text-red-800">
+                      {error === NO_AI_PROVIDER_MESSAGE
+                        ? "Finish setup"
+                        : "Error"}
+                    </p>
                     <p className="text-[10px] text-red-700">{error}</p>
+                    {error === NO_AI_PROVIDER_MESSAGE && (
+                      <button
+                        type="button"
+                        className="mt-1.5 cursor-pointer rounded border border-red-300 bg-white/70 px-2 py-0.5 text-[10px] font-medium text-red-800 hover:bg-white"
+                        onClick={() => {
+                          invoke("open_dashboard").catch(() => {});
+                        }}
+                      >
+                        Open the dashboard
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

@@ -1,6 +1,11 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useApp } from "@/contexts";
-import { MAX_FILES, CHAT_ANALYSIS_SYSTEM_PROMPT } from "@/config";
+import {
+  MAX_FILES,
+  CHAT_ANALYSIS_SYSTEM_PROMPT,
+  NO_AI_PROVIDER_MESSAGE,
+  INVALID_AI_PROVIDER_MESSAGE,
+} from "@/config";
 import { px } from "@/lib/prompts/overrides";
 import {
   fetchAIResponse,
@@ -269,7 +274,7 @@ export const useChatCompletion = (
         if (!selectedAIProvider.provider && !useChannelPulseAPI) {
           setState((prev) => ({
             ...prev,
-            error: "Please select an AI provider in settings",
+            error: NO_AI_PROVIDER_MESSAGE,
           }));
           return;
         }
@@ -280,7 +285,7 @@ export const useChatCompletion = (
         if (!provider && !useChannelPulseAPI) {
           setState((prev) => ({
             ...prev,
-            error: "Invalid provider selected",
+            error: INVALID_AI_PROVIDER_MESSAGE,
           }));
           return;
         }

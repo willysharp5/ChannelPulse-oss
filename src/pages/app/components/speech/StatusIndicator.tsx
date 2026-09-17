@@ -24,9 +24,15 @@ export const StatusIndicator = ({
     <div className="flex flex-1 items-center gap-2 px-3 py-2 justify-end">
       {/* Priority: Error > AI Processing > Transcribing > Listening */}
       {error && !setupRequired ? (
-        <div className="flex items-center gap-2 text-red-600">
-          <AlertCircleIcon className="w-4 h-4" />
-          <span className="text-xs font-medium">{error}</span>
+        <div className="flex min-w-0 items-center gap-2 text-red-600">
+          <AlertCircleIcon className="w-4 h-4 shrink-0" />
+          {/* One line only: this sits in the toolbar next to the controls, so a
+              long message (e.g. the "no model connected" setup instructions)
+              has to clip here rather than push them off. The full text shows in
+              the panel below, and on hover. */}
+          <span className="truncate text-xs font-medium" title={error}>
+            {error}
+          </span>
         </div>
       ) : isAIProcessing ? (
         <div className="flex items-center gap-2 animate-pulse">

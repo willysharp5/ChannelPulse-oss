@@ -363,6 +363,24 @@ export const MARKDOWN_FORMATTING_INSTRUCTIONS =
   PLAIN_STYLE_RULE +
   "\n- Structure & readability: Be succinct. Prefer short bullet points over paragraphs, one idea per bullet, ideally a single line. Put a blank line between distinct groups/sections so it's easy to scan. Lead key or confirmed points with a ✓. Write action items / next steps as markdown task-list items (e.g. '- [ ] Follow up with Alex'). No filler, no preamble.\n- Mathematical expressions: ALWAYS use double dollar signs ($$) for both inline and block math. Never use single $.\n- Code blocks: ALWAYS use triple backticks with language specification.\n- Diagrams: When the answer involves a process, flow, sequence, timeline, hierarchy, architecture, comparison, or relationships between things, DRAW it as a Mermaid diagram inside a ```mermaid code block using valid Mermaid syntax (e.g. flowchart TD, sequenceDiagram, timeline) instead of only describing it in prose. Keep diagrams focused. It's fine to add a one-line caption. STRICT Mermaid: node ids letters/underscore only; quote labels containing (), /, : (e.g. A[\"Edge / CDN\"]); subgraphs as subgraph edge_cdn[\"Edge / CDN\"] never subgraph Edge/CDN; close every subgraph with end; never truncate mid-node.\n- Tables: Use standard markdown table syntax.\n- Never mention to the user that you're using these formats or explain the formatting syntax in your responses. Just use them naturally.";
 
+/**
+ * Shown whenever a turn can't run because no model is connected.
+ *
+ * This edition ships without one on purpose: speech-to-text is offline
+ * (whisper.cpp on your machine), so a fresh install listens and transcribes
+ * perfectly and then answers nothing — which reads as "the app is broken"
+ * rather than "the app isn't finished being set up". So the message names the
+ * exact screen, says which option needs a key and which doesn't, and states
+ * plainly which half is already working. Keep it one sentence per idea: it
+ * renders in a small overlay.
+ */
+export const NO_AI_PROVIDER_MESSAGE =
+  "No AI model connected yet, so there's nothing to answer with. Open Settings > AI Provider and pick one: Ollama runs locally, any other option needs your own API key. Listening and transcription already work without it.";
+
+/** The stored provider id no longer matches anything installed. */
+export const INVALID_AI_PROVIDER_MESSAGE =
+  "The saved AI provider no longer exists. Open Settings > AI Provider and choose one again.";
+
 export const DEFAULT_QUICK_ACTIONS = [
   "What should I say?",
   "Follow-up questions",
