@@ -67,6 +67,8 @@ interface SamplePromptsProps {
   selectedPromptId: number | null;
   createPrompt: (input: SystemPromptInput) => Promise<SystemPrompt>;
   handleSelectPrompt: (promptId: number) => void;
+  /** Turn the active persona off — one is active at a time. */
+  clearSelectedPrompt: () => void;
   onCreateClick: () => void;
 }
 
@@ -75,6 +77,7 @@ export const SamplePrompts = ({
   selectedPromptId,
   createPrompt,
   handleSelectPrompt,
+  clearSelectedPrompt,
   onCreateClick,
 }: SamplePromptsProps) => {
   const { promptUpgrade } = useProUpsell();
@@ -316,6 +319,13 @@ export const SamplePrompts = ({
               role="button"
               tabIndex={0}
               onClick={() => openTemplate(sample)}
+              title={
+                locked
+                  ? "In the hosted app"
+                  : isSelected
+                  ? "In use — open it to stop using it"
+                  : "Preview & use"
+              }
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
@@ -460,6 +470,18 @@ export const SamplePrompts = ({
               Cancel
             </Button>
             <div className="flex items-center gap-2">
+              {!editMode && preview && isSampleSelected(preview) && (
+                // The one persona in use, turned off from where it was turned on.
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    clearSelectedPrompt();
+                    closePreview();
+                  }}
+                >
+                  Stop using
+                </Button>
+              )}
               {!editMode && (
                 <Button variant="outline" onClick={() => setEditMode(true)}>
                   <PencilIcon className="size-4" />

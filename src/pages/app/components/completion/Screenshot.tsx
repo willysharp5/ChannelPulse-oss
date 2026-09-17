@@ -30,6 +30,9 @@ export const Screenshot = ({
       title={
         !supportsImages
           ? "Screenshot not supported by current AI provider"
+          : attachedFiles.length >= MAX_FILES
+          ? // Disabled with a full message — say why, since the button can't.
+            `This message already carries ${attachedFiles.length}/${MAX_FILES} images — remove one to take a screenshot`
           : `${captureMode} mode (${processingMode}) - ${attachedFiles.length}/${MAX_FILES} files`
       }
       onClick={captureScreenshot}

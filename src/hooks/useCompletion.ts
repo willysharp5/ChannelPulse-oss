@@ -75,6 +75,11 @@ export const useCompletion = () => {
   const [enableVAD, setEnableVAD] = useState(false);
   const [messageHistoryOpen, setMessageHistoryOpen] = useState(false);
   const [isFilesPopoverOpen, setIsFilesPopoverOpen] = useState(false);
+  // True once someone has reached for a second image on this message. A message
+  // carries MAX_FILES of them in this edition, so instead of dropping the extras
+  // in silence the files popover says where the rest of them live. Cleared as
+  // soon as the attachment is removed, so the slot is free again.
+  const [fileLimitHit, setFileLimitHit] = useState(false);
   const [isScreenshotLoading, setIsScreenshotLoading] = useState(false);
   const [keepEngaged, setKeepEngaged] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -123,6 +128,7 @@ export const useCompletion = () => {
   }, []);
 
   const removeFile = useCallback((fileId: string) => {
+    setFileLimitHit(false);
     setState((prev) => ({
       ...prev,
       attachedFiles: prev.attachedFiles.filter((f) => f.id !== fileId),
@@ -130,6 +136,7 @@ export const useCompletion = () => {
   }, []);
 
   const clearFiles = useCallback(() => {
+    setFileLimitHit(false);
     setState((prev) => ({ ...prev, attachedFiles: [] }));
   }, []);
 
@@ -524,17 +531,19 @@ export const useCompletion = () => {
   }, [loadConversation, startNewConversation, state.currentConversationId]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    const MAX_FILES = 6;
+    const images = Array.from(e.target.files || []).filter((f) =>
+      f.type.startsWith("image/")
+    );
+    const room = Math.max(0, MAX_FILES - state.attachedFiles.length);
 
-    files.forEach((file) => {
-      if (
-        file.type.startsWith("image/") &&
-        state.attachedFiles.length < MAX_FILES
-      ) {
-        addFile(file);
-      }
-    });
+    images.slice(0, room).forEach((file) => addFile(file));
+
+    // Picked more than the message can carry: open the files popover so the
+    // extras are accounted for instead of just disappearing.
+    if (images.length > room) {
+      setFileLimitHit(true);
+      setIsFilesPopoverOpen(true);
+    }
 
     // Reset input so same file can be selected again
     e.target.value = "";
@@ -543,10 +552,10 @@ export const useCompletion = () => {
   const handleScreenshotSubmit = useCallback(
     async (base64: string, prompt?: string) => {
       if (state.attachedFiles.length >= MAX_FILES) {
-        setState((prev) => ({
-          ...prev,
-          error: `You can only upload ${MAX_FILES} files`,
-        }));
+        // Same rule as the picker: the message is full, so point at where more
+        // images live rather than raising an error the user can't act on.
+        setFileLimitHit(true);
+        setIsFilesPopoverOpen(true);
         return;
       }
 
@@ -738,21 +747,29 @@ export const useCompletion = () => {
         e.preventDefault();
 
         const processedFiles: File[] = [];
+        let skipped = 0;
 
         Array.from(items).forEach((item) => {
-          if (
-            item.type.startsWith("image/") &&
-            state.attachedFiles.length + processedFiles.length < MAX_FILES
-          ) {
-            const file = item.getAsFile();
-            if (file) {
-              processedFiles.push(file);
-            }
+          if (!item.type.startsWith("image/")) return;
+          if (state.attachedFiles.length + processedFiles.length >= MAX_FILES) {
+            skipped += 1;
+            return;
+          }
+          const file = item.getAsFile();
+          if (file) {
+            processedFiles.push(file);
           }
         });
 
         // Process all files
         await Promise.all(processedFiles.map((file) => addFile(file)));
+
+        // Pasted more images than the message can carry — same pitch as the
+        // picker rather than a silent drop.
+        if (skipped > 0) {
+          setFileLimitHit(true);
+          setIsFilesPopoverOpen(true);
+        }
       }
     },
     [state.attachedFiles.length, addFile]
@@ -1043,6 +1060,8 @@ export const useCompletion = () => {
     resizeWindow,
     isFilesPopoverOpen,
     setIsFilesPopoverOpen,
+    fileLimitHit,
+    setFileLimitHit,
     onRemoveAllFiles,
     inputRef,
     captureScreenshot,

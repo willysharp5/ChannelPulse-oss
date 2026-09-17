@@ -118,6 +118,10 @@ export interface UseCompletionReturn {
   isFilesPopoverOpen: boolean;
   /** Function to control files popover visibility */
   setIsFilesPopoverOpen: Dispatch<SetStateAction<boolean>>;
+  /** Whether someone has reached for more images than a message can carry */
+  fileLimitHit: boolean;
+  /** Function to raise/clear the "one image per message" notice */
+  setFileLimitHit: Dispatch<SetStateAction<boolean>>;
   /** Function to remove all files and close the files popover */
   onRemoveAllFiles: () => void;
 

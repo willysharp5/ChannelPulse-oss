@@ -85,8 +85,32 @@ export const STORAGE_KEYS = {
   REFERENCE_LAST_DOC: "reference_last_doc_v1",
 } as const;
 
-// Max number of files that can be attached to a message
-export const MAX_FILES = 6;
+/**
+ * Free-edition limits: one of each at a time.
+ *
+ * The things you accumulate in this edition come one at a time — one image on a
+ * message, one interview loop on the go, one interview of your own. Reaching for
+ * a second one isn't an error, it's the one honest place to say what the hosted
+ * app is for (see `components/pro-upsell.tsx`), and deleting the one you have
+ * frees the slot again immediately.
+ *
+ * The same shape applies to personas, which are single by construction: one is
+ * active, clicking it again turns it off (see `hooks/useSystemPrompts.ts`).
+ *
+ * NOT A SECURITY BOUNDARY, exactly like `FREE_PERSONA_IDS` — this is UI on top
+ * of local storage the user owns. It's an honest signal about what the free
+ * edition carries, not a lock.
+ */
+
+// Max images that can be attached to a single message.
+export const MAX_FILES = 1;
+
+// Max interview loops on the go at once ("Full loop" tab).
+export const MAX_LOOP_RUNS = 1;
+
+// Max interviews of your own (built-in templates aren't counted — you don't
+// keep those, you just run them).
+export const MAX_CUSTOM_INTERVIEWS = 1;
 
 /**
  * The hosted ChannelPulse web app. The desktop app links out to it as a pointer

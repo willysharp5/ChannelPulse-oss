@@ -473,21 +473,10 @@ export async function backendBillingProvision(): Promise<void> {
 }
 
 /**
- * Close the signed-in user's account through /account-delete. The server cancels
- * any Stripe subscription, bans the login and revokes every session, then marks
- * the user for erasure; the actual data delete is a job someone runs
- * (`npm run purge:accounts -- --apply`), so UI copy should say the data goes
- * within 30 days rather than instantly. The caller signs out afterwards.
- * Exposed here (and on Profile) so the deletion path is reachable on the web as
- * well as in the mobile app, which is what Play's account-deletion policy asks.
+ * No account-delete call here. This edition has no account: there is nothing to
+ * cancel, nothing to ban, and nothing on a server to erase — see the note where
+ * the Settings page's danger zone used to be.
  */
-export async function backendDeleteAccount(): Promise<void> {
-  const res = await managedFetch("account-delete", JSON.stringify({}));
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    throw new Error(`Account delete error ${res.status}: ${detail}`);
-  }
-}
 
 /** One marked-or-banned account, as the admin console sees it. */
 export interface AccountDeletionRecord {

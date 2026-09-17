@@ -43,6 +43,7 @@ const SystemPrompts = () => {
     updatePrompt,
     selectedPromptId,
     handleSelectPrompt,
+    clearSelectedPrompt,
     clearError,
   } = useSystemPrompts();
 
@@ -154,9 +155,14 @@ const SystemPrompts = () => {
   };
 
   /**
-   * Handle selecting a prompt card
+   * A card click picks that persona — or, on the one already in use, puts it
+   * back. One is active at a time, so this is the only way to run with none.
    */
   const handleCardClick = (promptId: number) => {
+    if (promptId === selectedPromptId) {
+      clearSelectedPrompt();
+      return;
+    }
     handleSelectPrompt(promptId);
   };
 
@@ -197,7 +203,7 @@ const SystemPrompts = () => {
   return (
     <PageLayout
       title="Personas"
-      description="Specialize the assistant for your role or scenario (e.g. interview, studying, meetings). Personas layer on top of the core system prompt; they don't replace it."
+      description="Specialize the assistant for your role or scenario (e.g. interview, studying, meetings). Personas layer on top of the core system prompt; they don't replace it. One is active at a time — click the one in use to turn it off."
     >
       {/* Error Display */}
       {error && (
@@ -254,6 +260,11 @@ const SystemPrompts = () => {
                     : "!bg-muted/40 border-border/60 hover:border-primary/40"
                 }`}
                 onClick={() => handleCardClick(prompt.id)}
+                title={
+                  isSelected
+                    ? "In use — click to turn it off"
+                    : "Click to use this persona"
+                }
               >
                 {isSelected && (
                   <CheckCircle2 className="size-5 text-green-500 flex-shrink-0 absolute top-2 right-2" />
@@ -377,6 +388,7 @@ const SystemPrompts = () => {
         selectedPromptId={selectedPromptId}
         createPrompt={createPrompt}
         handleSelectPrompt={handleSelectPrompt}
+        clearSelectedPrompt={clearSelectedPrompt}
         onCreateClick={handleCreateClick}
       />
     </PageLayout>

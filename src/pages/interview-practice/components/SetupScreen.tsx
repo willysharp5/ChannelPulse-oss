@@ -46,6 +46,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Check,
+  LockIcon,
   Pencil,
   Plus,
   Search,
@@ -56,6 +57,8 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MAX_CUSTOM_INTERVIEWS } from "@/config";
+import { useProUpsell } from "@/components/pro-upsell";
 import { TemplateEditor } from "./TemplateEditor";
 import { CreateInterviewFlow } from "./CreateInterviewFlow";
 import { QuestionsAssistant } from "./QuestionsAssistant";
@@ -63,6 +66,22 @@ import { QuestionsAssistant } from "./QuestionsAssistant";
 interface SetupScreenProps {
   onStart: (template: InterviewTemplate) => void;
 }
+
+/**
+ * The one ready-made interview this edition runs.
+ *
+ * Same shape as `FREE_PERSONA_IDS` in `pages/system-prompts/SamplePrompts.tsx`:
+ * one works, the rest stay readable but locked, because a card you can see is a
+ * better argument for the hosted app than a feature bullet. General Behavioral
+ * is the one that's free because it's the one that fits every role — and you can
+ * do anything with it (customize it, refine its questions, sit it as often as
+ * you like), on top of the one interview of your own below.
+ *
+ * NOT A SECURITY BOUNDARY, same as `FREE_PERSONA_IDS`: every template is in
+ * `lib/interview/templates.ts`, which is public source. Locking the card is an
+ * honest signal about what this edition carries, not an attempt to hide words.
+ */
+const FREE_INTERVIEW_IDS = new Set(["builtin-general-behavioral"]);
 
 type CategoryFilter = "all" | InterviewCategoryId;
 
@@ -77,6 +96,7 @@ function customCreatedAt(t: InterviewTemplate): number {
 }
 
 export function SetupScreen({ onStart }: SetupScreenProps) {
+  const { promptUpgrade } = useProUpsell();
   const [version, setVersion] = useState(0);
   const [editing, setEditing] = useState<InterviewTemplate | null>(null);
   const [assisting, setAssisting] = useState<InterviewTemplate | null>(null);
@@ -233,6 +253,35 @@ export function SetupScreen({ onStart }: SetupScreenProps) {
     [templates]
   );
 
+  /** A ready-made interview this edition doesn't run — see FREE_INTERVIEW_IDS. */
+  const isLocked = (t: InterviewTemplate) =>
+    t.builtIn && !FREE_INTERVIEW_IDS.has(t.id);
+
+  /**
+   * Reaching for a second ready-made interview. Nothing is disabled and nothing
+   * fails silently: the card is the pitch, so say which interview they wanted
+   * and let the dialog make the case for the hosted app.
+   */
+  const pitchLocked = (t: InterviewTemplate) =>
+    promptUpgrade(`The “${t.title}” interview`);
+
+  /**
+   * Building an interview of your own, one at a time. This edition keeps
+   * MAX_CUSTOM_INTERVIEWS of them; delete the one you have and the next is free.
+   * The built-in templates aren't counted — you don't keep those, you run them.
+   */
+  const startCreating = () => {
+    if (allCustomCount >= MAX_CUSTOM_INTERVIEWS) {
+      promptUpgrade(
+        MAX_CUSTOM_INTERVIEWS === 1
+          ? "More than one interview of your own"
+          : `More than ${MAX_CUSTOM_INTERVIEWS} interviews of your own`
+      );
+      return;
+    }
+    setCreating(true);
+  };
+
   if (creating) {
     return (
       <CreateInterviewFlow
@@ -332,7 +381,7 @@ export function SetupScreen({ onStart }: SetupScreenProps) {
             </SelectContent>
           </Select>
         ) : null}
-        <Button variant="default" onClick={() => setCreating(true)}>
+        <Button variant="default" onClick={startCreating}>
           <Plus className="size-4" />
           Create New
         </Button>
@@ -359,6 +408,11 @@ export function SetupScreen({ onStart }: SetupScreenProps) {
           <p className="text-xs text-muted-foreground">
             Interviews you created or customized from a template. Edits stay
             here and leave the original unchanged.
+            {allCustomCount >= MAX_CUSTOM_INTERVIEWS
+              ? MAX_CUSTOM_INTERVIEWS === 1
+                ? " One of your own at a time in this edition — delete this one to build a different interview."
+                : ` ${MAX_CUSTOM_INTERVIEWS} of your own at a time in this edition — delete one to build another.`
+              : ""}
           </p>
 
           <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
@@ -413,7 +467,7 @@ export function SetupScreen({ onStart }: SetupScreenProps) {
                 }
               />
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 pb-4">
-                <CreateOwnCard onClick={() => setCreating(true)} />
+                <CreateOwnCard onClick={startCreating} />
               </div>
             </div>
           ) : (
@@ -453,7 +507,7 @@ export function SetupScreen({ onStart }: SetupScreenProps) {
                   }
                 />
               ))}
-              <CreateOwnCard onClick={() => setCreating(true)} />
+              <CreateOwnCard onClick={startCreating} />
             </div>
           )}
 
@@ -501,7 +555,9 @@ export function SetupScreen({ onStart }: SetupScreenProps) {
         <TabsContent value="templates" className="space-y-4 outline-none">
           <p className="text-xs text-muted-foreground">
             Ready-made job interviews: start one, or customize it into
-            Personalized.
+            Personalized. This edition runs one of them — General Behavioral,
+            under General — and you can do anything with it. The rest are here to
+            read; sitting one of those comes with the hosted app.
           </p>
 
           <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
@@ -560,36 +616,47 @@ export function SetupScreen({ onStart }: SetupScreenProps) {
                 </Button>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 pb-4">
-                <CreateOwnCard onClick={() => setCreating(true)} />
+                <CreateOwnCard onClick={startCreating} />
               </div>
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 pb-4">
-              {pageItems.map((template) => (
-                <TemplateCard
-                  key={template.id}
-                  template={template}
-                  query={search}
-                  expanded={expandedId === template.id}
-                  editingSettings={false}
-                  onToggleExpand={() => {
-                    if (expandedId === template.id) {
-                      setExpandedId(null);
-                      setEditingId(null);
-                    } else {
-                      setExpandedId(template.id);
-                      setEditingId(null);
+              {pageItems.map((template) => {
+                // A locked card still renders in full — you can read what the
+                // interview is — but every way in leads to the pitch instead.
+                const locked = isLocked(template);
+                return (
+                  <TemplateCard
+                    key={template.id}
+                    template={template}
+                    query={search}
+                    locked={locked}
+                    expanded={expandedId === template.id}
+                    editingSettings={false}
+                    onToggleExpand={() => {
+                      if (locked) return pitchLocked(template);
+                      if (expandedId === template.id) {
+                        setExpandedId(null);
+                        setEditingId(null);
+                      } else {
+                        setExpandedId(template.id);
+                        setEditingId(null);
+                      }
+                    }}
+                    onStartEditSettings={() =>
+                      locked ? pitchLocked(template) : setEditing(template)
                     }
-                  }}
-                  onStartEditSettings={() => setEditing(template)}
-                  onDoneEditSettings={() => {}}
-                  onStart={onStart}
-                  onCustomize={() => setEditing(template)}
-                  onVoiceChange={() => {}}
-                  onSettingsChange={() => {}}
-                />
-              ))}
-              <CreateOwnCard onClick={() => setCreating(true)} />
+                    onDoneEditSettings={() => {}}
+                    onStart={(t) => (locked ? pitchLocked(t) : onStart(t))}
+                    onCustomize={() =>
+                      locked ? pitchLocked(template) : setEditing(template)
+                    }
+                    onVoiceChange={() => {}}
+                    onSettingsChange={() => {}}
+                  />
+                );
+              })}
+              <CreateOwnCard onClick={startCreating} />
             </div>
           )}
 
@@ -690,6 +757,7 @@ function CreateOwnCard({ onClick }: { onClick: () => void }) {
 function TemplateCard({
   template,
   isNew,
+  locked,
   expanded,
   editingSettings,
   onToggleExpand,
@@ -706,6 +774,12 @@ function TemplateCard({
 }: {
   template: InterviewTemplate;
   isNew?: boolean;
+  /**
+   * A ready-made interview this edition doesn't run. The card stays fully
+   * readable — that's the point — but every handler is the pitch, so the caller
+   * routes them all to `promptUpgrade` rather than disabling anything here.
+   */
+  locked?: boolean;
   /** Active search query — highlights matches in the title. */
   query?: string;
   expanded: boolean;
@@ -753,6 +827,9 @@ function TemplateCard({
     setSelectedQ(all ? new Set(cardQuestions.map((_, i) => i)) : new Set());
 
   const startWithSelection = () => {
+    // Locked cards hand straight off to the caller (which pitches) — no
+    // question-selection rule should be able to swallow that click.
+    if (locked) return onStart(template);
     if (!hasCustom) return onStart(template);
     if (selectedQ.size === 0) return;
     // All selected → start the template as-is.
@@ -801,10 +878,18 @@ function TemplateCard({
               size="icon"
               variant="ghost"
               className="size-7 text-muted-foreground hover:text-foreground"
-              title="Customize (saves to Personalized)"
+              title={
+                locked
+                  ? "In the hosted app"
+                  : "Customize (saves to Personalized)"
+              }
               onClick={onCustomize}
             >
-              <Pencil className="h-3.5 w-3.5" />
+              {locked ? (
+                <LockIcon className="h-3.5 w-3.5" />
+              ) : (
+                <Pencil className="h-3.5 w-3.5" />
+              )}
             </Button>
           ) : null}
           {!template.builtIn && onDelete ? (
@@ -883,16 +968,29 @@ function TemplateCard({
       <CardContent className="flex flex-wrap items-center gap-2 px-5 pb-5 pt-3">
         <Button
           className="min-w-0 flex-1 basis-36"
-          disabled={hasCustom && selectedQ.size === 0}
+          // Not disabled on a locked card: a dead button explains nothing, and
+          // this one's whole job is to say where the other interviews live.
+          variant={locked ? "outline" : "default"}
+          disabled={!locked && hasCustom && selectedQ.size === 0}
+          title={locked ? "This interview comes with the hosted app" : undefined}
           onClick={startWithSelection}
         >
-          <Play className="h-4 w-4 shrink-0" />
-          {hasCustom &&
-          expanded &&
-          selectedQ.size > 0 &&
-          selectedQ.size !== cardQuestions.length
-            ? `Practice ${selectedQ.size} selected`
-            : "Start practice"}
+          {locked ? (
+            <>
+              <LockIcon className="h-4 w-4 shrink-0" />
+              In the hosted app
+            </>
+          ) : (
+            <>
+              <Play className="h-4 w-4 shrink-0" />
+              {hasCustom &&
+              expanded &&
+              selectedQ.size > 0 &&
+              selectedQ.size !== cardQuestions.length
+                ? `Practice ${selectedQ.size} selected`
+                : "Start practice"}
+            </>
+          )}
         </Button>
         {!template.builtIn && onAssist ? (
           <Button

@@ -17,7 +17,6 @@ import { useEffect, useState } from "react";
 import { PageLayout } from "@/layouts";
 import { Card, Button, Textarea, toast } from "@/components";
 import { ProfileBuilder } from "@/pages/settings/components/ProfileBuilder";
-import { DeleteAccount } from "@/pages/settings/components/DeleteAccount";
 import { useAuth } from "@/contexts";
 import { getUserProfile, setUserProfile } from "@/lib/memory";
 import { onSyncedKeys } from "@/lib/sync/kv";
@@ -147,14 +146,9 @@ const Profile = () => {
           </Card>
         )}
 
-        {/* Danger zone — closing a backend account, not clearing local data
-            (that's "Delete Chat History" in Settings). Only shown when there is
-            an account to close; a local-only build has none. */}
-        {configured && (
-          <Card className="gap-3 border-destructive/40 p-5">
-            <DeleteAccount />
-          </Card>
-        )}
+        {/* NO danger zone. There is no account to close in this edition — your
+            data is already only on this machine, and the local copy is cleared
+            from Settings ("Delete Chat History"). */}
 
         <ProfileBuilder
           open={builderOpen}

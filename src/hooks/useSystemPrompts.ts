@@ -14,7 +14,7 @@ import type {
 import { DEFAULT_SYSTEM_PROMPT, STORAGE_KEYS } from "@/config";
 import { safeLocalStorage } from "@/lib";
 import { subscribeSync } from "@/lib/sync";
-import { setSyncedItem, onSyncedKeys } from "@/lib/sync/kv";
+import { setSyncedItem, removeSyncedItem, onSyncedKeys } from "@/lib/sync/kv";
 import { useApp } from "@/contexts";
 
 export const useSystemPrompts = () => {
@@ -195,6 +195,19 @@ export const useSystemPrompts = () => {
   );
 
   /**
+   * The other half of `applyPromptLocally`: no persona active on THIS device.
+   * One persona is active at a time — that's what `selectedPromptId` being a
+   * single value means — so turning the active one off is how you get back to
+   * the bare system prompt, and how you free the slot for a different one.
+   */
+  const clearPromptLocally = useCallback(() => {
+    setSystemPrompt(DEFAULT_SYSTEM_PROMPT);
+    setSelectedPromptId(null);
+    safeLocalStorage.setItem(STORAGE_KEYS.SYSTEM_PROMPT, DEFAULT_SYSTEM_PROMPT);
+    safeLocalStorage.removeItem(STORAGE_KEYS.SELECTED_SYSTEM_PROMPT_ID);
+  }, [setSystemPrompt]);
+
+  /**
    * Apply a persona selection made on another device. The active persona syncs
    * as a stable `sync_id` (see handleSelectPrompt); here we resolve it to this
    * device's local row and switch to it. Runs when prompts load and whenever the
@@ -243,6 +256,17 @@ export const useSystemPrompts = () => {
     [prompts, applyPromptLocally]
   );
 
+  /**
+   * Turn the active persona off (user action on this device): back to the bare
+   * system prompt, and the choice un-syncs so other devices follow. Clearing the
+   * synced value matters — the reconcile effect above would otherwise resolve the
+   * old `sync_id` and switch straight back on.
+   */
+  const clearSelectedPrompt = useCallback(() => {
+    clearPromptLocally();
+    removeSyncedItem(STORAGE_KEYS.SELECTED_PERSONA_SYNC_ID);
+  }, [clearPromptLocally]);
+
   return {
     prompts,
     isLoading,
@@ -254,5 +278,6 @@ export const useSystemPrompts = () => {
     refreshPrompts,
     clearError,
     handleSelectPrompt,
+    clearSelectedPrompt,
   };
 };

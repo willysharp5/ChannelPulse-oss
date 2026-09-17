@@ -23,6 +23,8 @@ import {
   type LoopStageRun,
 } from "@/lib/interview";
 import { cancelSpeech } from "@/lib/tts";
+import { MAX_LOOP_RUNS } from "@/config";
+import { useProUpsell } from "@/components/pro-upsell";
 import { CircleHelpIcon, Clock, Layers, Play, Plus, Trash2 } from "lucide-react";
 import moment from "moment";
 import { PracticeSession } from "../PracticeSession";
@@ -67,8 +69,27 @@ export function LoopScreen({
   // Remounts PracticeSession when a round is retaken from its own report.
   const [sessionKey, setSessionKey] = useState(0);
 
+  const { promptUpgrade } = useProUpsell();
+
   const refresh = useCallback(() => setRuns(listLoopRuns()), []);
   useEffect(() => refresh(), [refresh]);
+
+  /**
+   * Starting a loop, one at a time. This edition keeps MAX_LOOP_RUNS on the go;
+   * finish or delete the one you have and the next is free. Asking for another
+   * while one is open is where the hosted app gets to make its case.
+   */
+  const startNewLoop = () => {
+    if (runs.length >= MAX_LOOP_RUNS) {
+      promptUpgrade(
+        MAX_LOOP_RUNS === 1
+          ? "More than one interview loop at a time"
+          : `More than ${MAX_LOOP_RUNS} interview loops at a time`
+      );
+      return;
+    }
+    setPicking(true);
+  };
 
   useEffect(() => {
     onSessionChange?.(!!active);
@@ -239,6 +260,13 @@ export function LoopScreen({
             manager, each on its own clock, each graded, and a hire / no-hire
             call at the end.
           </p>
+          {runs.length >= MAX_LOOP_RUNS && (
+            <p className="text-xs text-muted-foreground">
+              {MAX_LOOP_RUNS === 1 ? "One loop" : `${MAX_LOOP_RUNS} loops`} at a
+              time in this edition — finish this one, or delete it to sit a
+              different role.
+            </p>
+          )}
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           <Button
@@ -251,7 +279,7 @@ export function LoopScreen({
             <CircleHelpIcon className="size-4" />
             How it works
           </Button>
-          <Button size="sm" onClick={() => setPicking(true)}>
+          <Button size="sm" onClick={startNewLoop}>
             <Plus className="size-4" />
             New loop
           </Button>
@@ -270,7 +298,7 @@ export function LoopScreen({
             description="Pick the role you're interviewing for and sit the whole process end to end."
           />
           <div className="flex items-center gap-2">
-            <Button size="sm" onClick={() => setPicking(true)}>
+            <Button size="sm" onClick={startNewLoop}>
               <Play className="size-4" />
               Start a loop
             </Button>

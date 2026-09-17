@@ -9,4 +9,3 @@ export * from "./FileResearchWizard";
 export * from "./ProfileBuilder";
 export * from "./SyncStatus";
 export * from "./Platforms";
-export * from "./DeleteAccount";

@@ -5,7 +5,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button, ScrollArea } from "@/components";
-import { PaperclipIcon, XIcon, PlusIcon, TrashIcon } from "lucide-react";
+import { ProCta, ProFeatureList } from "@/components/pro-upsell";
+import {
+  PaperclipIcon,
+  XIcon,
+  PlusIcon,
+  TrashIcon,
+  SparklesIcon,
+} from "lucide-react";
 import { UseCompletionReturn } from "@/types";
 import { MAX_FILES } from "@/config";
 import { useApp } from "@/contexts";
@@ -18,15 +25,24 @@ export const Files = ({
   isLoading,
   isFilesPopoverOpen,
   setIsFilesPopoverOpen,
+  fileLimitHit,
+  setFileLimitHit,
 }: UseCompletionReturn) => {
   const { supportsImages } = useApp();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const canAddMore = attachedFiles.length < MAX_FILES;
+
+  // At the limit, "add another" is the pitch rather than the picker. The overlay
+  // is its own window and lives outside ProUpsellProvider (that wraps the
+  // dashboard), so it shows the same copy inline instead of the shared dialog.
   const handleAddMoreClick = () => {
+    if (!canAddMore) {
+      setFileLimitHit(true);
+      return;
+    }
     fileInputRef.current?.click();
   };
-
-  const canAddMore = attachedFiles.length < MAX_FILES;
 
   return (
     <div className="relative">
@@ -71,7 +87,8 @@ export const Files = ({
           >
             <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/30">
               <h3 className="font-semibold text-sm select-none">
-                Attached Images ({attachedFiles.length}/{MAX_FILES})
+                {MAX_FILES === 1 ? "Attached Image" : "Attached Images"} (
+                {attachedFiles.length}/{MAX_FILES})
               </h3>
               <Button
                 size="icon"
@@ -84,7 +101,11 @@ export const Files = ({
               </Button>
             </div>
 
-            <ScrollArea className="p-4 h-[calc(100vh-11rem)]">
+            <ScrollArea
+              className={`p-4 ${
+                fileLimitHit ? "h-[calc(100vh-26rem)]" : "h-[calc(100vh-11rem)]"
+              }`}
+            >
               {/* Grid layout based on number of images */}
               <div
                 className={`gap-3 ${
@@ -127,16 +148,49 @@ export const Files = ({
               </div>
             </ScrollArea>
 
+            {/* One image per message in this edition — reaching for a second
+                one is where the hosted app gets to say what it's for. Same copy
+                as the shared dialog, inline because the overlay is its own
+                window (see handleAddMoreClick). */}
+            {fileLimitHit && (
+              <div className="border-t bg-muted/40 px-4 py-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <SparklesIcon className="size-4 shrink-0 text-primary" />
+                    <p className="text-sm font-semibold">
+                      One image per message here
+                    </p>
+                  </div>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="cursor-pointer"
+                    onClick={() => setFileLimitHit(false)}
+                    title="Dismiss"
+                  >
+                    <XIcon className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  The hosted app takes several at once, and adds:
+                </p>
+                <ProFeatureList className="mt-2 space-y-1.5" />
+                <div className="mt-3">
+                  <ProCta />
+                </div>
+              </div>
+            )}
+
             {/* Sticky footer with Add More button */}
             <div className="sticky bottom-0 border-t bg-background p-3 flex flex-row gap-2">
               <Button
                 onClick={handleAddMoreClick}
-                disabled={!canAddMore || isLoading}
+                disabled={isLoading}
                 className="w-2/4"
                 variant="outline"
               >
                 <PlusIcon className="h-4 w-4 mr-2" />
-                Add More Images {!canAddMore && `(${MAX_FILES} max)`}
+                {canAddMore ? "Add More Images" : "Attach another image"}
               </Button>
               <Button
                 className="w-2/4"
@@ -144,7 +198,7 @@ export const Files = ({
                 onClick={onRemoveAllFiles}
               >
                 <TrashIcon className="h-4 w-4 mr-2" />
-                Remove All Images
+                {attachedFiles.length > 1 ? "Remove All Images" : "Remove Image"}
               </Button>
             </div>
           </PopoverContent>

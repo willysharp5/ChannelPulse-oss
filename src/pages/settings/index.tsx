@@ -7,7 +7,6 @@ import {
   AutostartToggle,
   SyncStatus,
   Platforms,
-  DeleteAccount,
 } from "./components";
 import { PageLayout } from "@/layouts";
 import { isTauri } from "@/lib/platform";
@@ -74,11 +73,11 @@ const Settings = () => {
         <Platforms />
       </div>
 
-      {/* Danger zone — same control as the Profile page, deliberately duplicated
-          because this is where people look for it. */}
-      <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-5">
-        <DeleteAccount />
-      </div>
+      {/* NO "delete account" row here. This edition has no account to close:
+          everything is on your machine, so the only thing to delete is local
+          data ("Delete Chat History"). The row that used to sit here belonged to
+          the hosted app — in this build it could only ever say "sign in first",
+          which is an empty button pointing at a sign-in that doesn't exist. */}
     </PageLayout>
   );
 };
